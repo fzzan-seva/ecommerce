@@ -10,6 +10,5 @@
     @endforeach
 </div>
 <p class="text-muted" style="font-size:0.85rem;margin-top:0.75rem">
-    Pembayaran hanya via transfer. Konfirmasi bukti transfer ke WhatsApp
-    <a href="https://wa.me/{{ config('fqueensha.whatsapp_link') }}" target="_blank">{{ config('fqueensha.whatsapp') }}</a>.
+    Pembayaran hanya via transfer. Lampirkan foto bukti transfer pada form di bawah — pesanan baru diproses setelah bukti terverifikasi oleh admin.
 </p>

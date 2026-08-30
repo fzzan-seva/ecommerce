@@ -10,6 +10,17 @@
     <p><strong>Penerima:</strong> {{ $order->recipient_name }} — {{ $order->phone }}</p>
     <p><strong>Alamat:</strong> {{ $order->shipping_address }}</p>
     <p><strong>Pembayaran:</strong> {{ $order->paymentMethodLabel() }} — {{ $order->paymentAccount() }}</p>
+    @if($order->paymentProofUrl())
+        <p class="mt-1"><strong>Bukti Transfer:</strong></p>
+        <a href="{{ $order->paymentProofUrl() }}" target="_blank">
+            <img src="{{ $order->paymentProofUrl() }}" alt="Bukti transfer" style="max-width:300px;border-radius:6px;border:1px solid var(--border);">
+        </a>
+        @if($order->status === 'pending')
+            <p class="alert alert-warning mt-2">Verifikasi bukti transfer ini sebelum mengubah status menjadi <strong>Dibayar</strong>. Bukti yang tidak sesuai = uang hangus, barang tidak dikirim.</p>
+        @endif
+    @else
+        <p class="alert alert-error mt-2"><strong>Tanpa bukti transfer</strong> — pesanan ini belum boleh diproses.</p>
+    @endif
 
     <form method="POST" action="{{ route('admin.orders.status', $order) }}" class="flex gap-1 items-center mt-2">
         @csrf @method('PATCH')

@@ -8,7 +8,7 @@
 @if($addresses->isEmpty())
     <div class="alert alert-error sans">Anda belum punya alamat. <a href="{{ route('addresses.create') }}">Tambah alamat</a> terlebih dahulu.</div>
 @else
-    <form method="POST" action="{{ route('checkout.store') }}" class="sans checkout-layout">
+    <form method="POST" action="{{ route('checkout.store') }}" enctype="multipart/form-data" class="sans checkout-layout">
         @csrf
         <div class="card">
             <h3>Alamat Pengiriman</h3>
@@ -28,8 +28,19 @@
             @include('shop.checkout._payment_methods')
 
             <div class="form-group mt-2">
+                <label for="payment_proof">Foto Bukti Transfer <span class="text-danger">*</span></label>
+                <input type="file" name="payment_proof" id="payment_proof" class="form-control" accept="image/jpeg,image/png,image/jpg" required>
+                @error('payment_proof')<span class="text-danger">{{ $message }}</span>@enderror
+                <p class="text-muted" style="font-size:0.8rem;margin-top:0.5rem">Wajib melampirkan foto bukti transfer. Tanpa bukti, pesanan tidak akan diproses.</p>
+            </div>
+
+            <div class="form-group mt-2">
                 <label>Catatan (opsional)</label>
                 <textarea name="notes" class="form-control" rows="2"></textarea>
+            </div>
+
+            <div class="alert alert-warning mt-2">
+                <strong>Catatan Penting:</strong> Jika bukti transfer yang dilampirkan tidak sesuai (jumlah, rekening tujuan, atau atas nama yang salah), maka uang akan dianggap hangus dan barang <strong>tidak akan dikirimkan</strong>.
             </div>
         </div>
 

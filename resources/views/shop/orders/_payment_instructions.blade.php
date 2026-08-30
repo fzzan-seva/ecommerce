@@ -3,10 +3,8 @@
         <strong>Instruksi Pembayaran</strong>
         <p class="mt-1">Transfer <strong class="text-gold">{{ $order->formattedTotal() }}</strong> ke:</p>
         <p><strong>{{ $order->paymentMethodLabel() }}</strong> — {{ $order->paymentAccount() }}</p>
-        <p class="mt-1">Setelah transfer, kirim bukti pembayaran ke WhatsApp
-            <a href="https://wa.me/{{ config('fqueensha.whatsapp_link') }}?text=Konfirmasi%20pembayaran%20{{ urlencode($order->order_number) }}" target="_blank">
-                {{ config('fqueensha.whatsapp') }}
-            </a>
-        </p>
+        @if($order->paymentProofUrl())
+            <p class="mt-1">Bukti transfer Anda sudah dilampirkan dan sedang diverifikasi oleh admin.</p>
+        @endif
     </div>
 @endif

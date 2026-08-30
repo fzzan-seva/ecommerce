@@ -10,6 +10,12 @@
     <p><strong>Alamat:</strong> {{ $order->shipping_address }}</p>
     <p><strong>Pembayaran:</strong> {{ $order->paymentMethodLabel() }} — {{ $order->paymentAccount() }}</p>
     @include('shop.orders._payment_instructions')
+    @if($order->paymentProofUrl())
+        <p class="mt-1"><strong>Bukti Transfer:</strong></p>
+        <a href="{{ $order->paymentProofUrl() }}" target="_blank">
+            <img src="{{ $order->paymentProofUrl() }}" alt="Bukti transfer" style="max-width:260px;border-radius:6px;border:1px solid var(--border);">
+        </a>
+    @endif
     @if($order->notes)<p><strong>Catatan:</strong> {{ $order->notes }}</p>@endif
 
     <h3 class="text-gold mt-2">Item</h3>

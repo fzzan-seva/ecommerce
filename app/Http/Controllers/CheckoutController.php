@@ -37,8 +37,11 @@ class CheckoutController extends Controller
         $validated = $request->validate([
             'address_id' => ['required', 'exists:addresses,id'],
             'payment_method' => ['required', 'in:' . implode(',', array_keys(config('fqueensha.payment_methods')))],
+            'payment_proof' => ['required', 'image', 'mimes:jpeg,png,jpg', 'max:2048'],
             'notes' => ['nullable', 'string', 'max:500'],
         ]);
+
+        $paymentProof = $request->file('payment_proof') ? $request->file('payment_proof')->store('payment-proofs', 'public') : null;
 
         $address = $user->addresses()->findOrFail($validated['address_id']);
         $subtotal = $items->sum(fn ($item) => $item->subtotal());
@@ -51,7 +54,7 @@ class CheckoutController extends Controller
             }
         }
 
-        DB::transaction(function () use ($user, $items, $address, $validated, $subtotal, $shipping, $total) {
+        DB::transaction(function () use ($user, $items, $address, $validated, $paymentProof, $subtotal, $shipping, $total) {
             $order = Order::create([
                 'order_number' => 'FQ-' . strtoupper(uniqid()),
                 'user_id' => $user->id,
@@ -64,6 +67,7 @@ class CheckoutController extends Controller
                 'total' => $total,
                 'status' => 'pending',
                 'payment_method' => $validated['payment_method'],
+                'payment_proof' => $paymentProof,
                 'notes' => $validated['notes'] ?? null,
             ]);
 
@@ -87,6 +91,6 @@ class CheckoutController extends Controller
 
         $order = $user->orders()->latest()->first();
 
-        return redirect()->route('orders.show', $order)->with('success', 'Pesanan berhasil dibuat! Silakan lakukan transfer sesuai metode pembayaran yang dipilih.');
+        return redirect()->route('orders.show', $order)->with('success', 'Pesanan berhasil dibuat! Bukti transfer Anda akan diverifikasi oleh admin sebelum pesanan diproses.');
     }
 }

@@ -20,6 +20,7 @@ class Order extends Model
         'total',
         'status',
         'payment_method',
+        'payment_proof',
         'notes',
     ];
 
@@ -80,5 +81,10 @@ class Order extends Model
     public function paymentAccount(): ?string
     {
         return config("fqueensha.payment_methods.{$this->payment_method}.account");
+    }
+
+    public function paymentProofUrl(): ?string
+    {
+        return $this->payment_proof ? asset('storage/' . $this->payment_proof) : null;
     }
 }
