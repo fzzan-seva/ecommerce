@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exceptions\StockUnavailableException;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Models\ProductVariant;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
@@ -28,8 +31,78 @@ class OrderController extends Controller
             'status' => ['required', 'in:pending,paid,processing,shipped,completed,cancelled'],
         ]);
 
-        $order->update(['status' => $validated['status']]);
+        $to = $validated['status'];
+        $from = $order->status;
+
+        if ($to === $from) {
+            return back()->with('success', 'Status pesanan tidak berubah.');
+        }
+
+        $restoring = $to === 'cancelled' && $from !== 'cancelled';
+        $reclaiming = $from === 'cancelled' && $to !== 'cancelled';
+
+        try {
+            DB::transaction(function () use ($order, $to, $restoring, $reclaiming) {
+                $order->loadMissing('items');
+
+                if ($reclaiming) {
+                    // Re-activating a cancelled order puts its units back on the
+                    // shelf, so the stock has to be claimed again — otherwise the
+                    // shop can oversell the same garment.
+                    foreach ($order->items as $item) {
+                        $variantId = $this->resolveVariantId($item);
+
+                        if ($variantId === null) {
+                            continue;
+                        }
+
+                        $claimed = ProductVariant::whereKey($variantId)
+                            ->where('stock', '>=', $item->quantity)
+                            ->decrement('stock', $item->quantity);
+
+                        if ($claimed === 0) {
+                            throw new StockUnavailableException(
+                                "Stok {$item->product_name} ({$item->variantLabel()}) tidak cukup untuk mengaktifkan pesanan ini."
+                            );
+                        }
+                    }
+                }
+
+                $order->update(['status' => $to]);
+
+                // Stock is only ever deducted at checkout, so it has to come back
+                // on cancel. Without this, every cancelled order silently lost
+                // inventory for good.
+                if ($restoring) {
+                    foreach ($order->items as $item) {
+                        $variantId = $this->resolveVariantId($item);
+
+                        if ($variantId !== null) {
+                            ProductVariant::whereKey($variantId)->increment('stock', $item->quantity);
+                        }
+                    }
+                }
+            });
+        } catch (StockUnavailableException $e) {
+            return back()->with('error', $e->getMessage());
+        }
 
         return back()->with('success', 'Status pesanan diperbarui.');
+    }
+
+    /**
+     * Order items store a denormalised size/colour snapshot, so match the
+     * original variant back on (product_id, size, color).
+     */
+    private function resolveVariantId($item): ?int
+    {
+        if (! $item->product_id) {
+            return null;
+        }
+
+        return ProductVariant::where('product_id', $item->product_id)
+            ->where('size', $item->size)
+            ->where('color', $item->color)
+            ->value('id');
     }
 }

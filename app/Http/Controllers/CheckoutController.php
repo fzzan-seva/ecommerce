@@ -2,10 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\StockUnavailableException;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\ProductVariant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class CheckoutController extends Controller
 {
@@ -35,62 +39,89 @@ class CheckoutController extends Controller
         }
 
         $validated = $request->validate([
-            'address_id' => ['required', 'exists:addresses,id'],
+            // Scoped with Rule::exists so another user's address ID is rejected as
+            // "invalid" rather than passing validation and then 404ing, which
+            // would let an attacker probe which address IDs exist.
+            'address_id' => [
+                'required',
+                Rule::exists('addresses', 'id')->where('user_id', $user->id),
+            ],
             'payment_method' => ['required', 'in:' . implode(',', array_keys(config('fqueensha.payment_methods')))],
             'payment_proof' => ['required', 'image', 'mimes:jpeg,png,jpg', 'max:2048'],
             'notes' => ['nullable', 'string', 'max:500'],
         ]);
 
-        $paymentProof = $request->file('payment_proof') ? $request->file('payment_proof')->store('payment-proofs', 'public') : null;
-
         $address = $user->addresses()->findOrFail($validated['address_id']);
+
+        // Only store the upload once validation has passed, so a rejected
+        // request never leaves a stray file on disk. It goes on the private
+        // disk, outside the public/storage symlink, so the receipt is not
+        // world-readable by URL.
+        $paymentProof = $request->file('payment_proof')->store('payment-proofs', 'payment_proofs');
+
         $subtotal = $items->sum(fn ($item) => $item->subtotal());
         $shipping = 15000;
         $total = $subtotal + $shipping;
 
-        foreach ($items as $item) {
-            if ($item->quantity > $item->variant->stock) {
-                return back()->with('error', "Stok {$item->product->name} ({$item->variant->label()}) tidak mencukupi.");
-            }
-        }
-
-        DB::transaction(function () use ($user, $items, $address, $validated, $paymentProof, $subtotal, $shipping, $total) {
-            $order = Order::create([
-                'order_number' => 'FQ-' . strtoupper(uniqid()),
-                'user_id' => $user->id,
-                'address_id' => $address->id,
-                'recipient_name' => $address->recipient_name,
-                'phone' => $address->phone,
-                'shipping_address' => $address->fullAddress(),
-                'subtotal' => $subtotal,
-                'shipping_cost' => $shipping,
-                'total' => $total,
-                'status' => 'pending',
-                'payment_method' => $validated['payment_method'],
-                'payment_proof' => $paymentProof,
-                'notes' => $validated['notes'] ?? null,
-            ]);
-
-            foreach ($items as $item) {
-                OrderItem::create([
-                    'order_id' => $order->id,
-                    'product_id' => $item->product_id,
-                    'product_name' => $item->product->name,
-                    'size' => $item->variant->size,
-                    'color' => $item->variant->color,
-                    'price' => $item->product->price,
-                    'quantity' => $item->quantity,
-                    'subtotal' => $item->subtotal(),
+        try {
+            $order = DB::transaction(function () use ($user, $items, $address, $validated, $paymentProof, $subtotal, $shipping, $total) {
+                $order = Order::create([
+                    'order_number' => 'FQ-' . strtoupper(uniqid()),
+                    'user_id' => $user->id,
+                    'address_id' => $address->id,
+                    'recipient_name' => $address->recipient_name,
+                    'phone' => $address->phone,
+                    'shipping_address' => $address->fullAddress(),
+                    'subtotal' => $subtotal,
+                    'shipping_cost' => $shipping,
+                    'total' => $total,
+                    'status' => 'pending',
+                    'payment_method' => $validated['payment_method'],
+                    'payment_proof' => $paymentProof,
+                    'notes' => $validated['notes'] ?? null,
                 ]);
 
-                $item->variant->decrement('stock', $item->quantity);
-            }
+                foreach ($items as $item) {
+                    // Claim the stock atomically: the WHERE guard makes the check
+                    // and the decrement a single statement, so two shoppers racing
+                    // for the last item cannot both win. Previously the check ran
+                    // outside the transaction and decrement() was unguarded, which
+                    // let concurrent checkouts oversell and blow up with a 500.
+                    $claimed = ProductVariant::whereKey($item->product_variant_id)
+                        ->where('stock', '>=', $item->quantity)
+                        ->decrement('stock', $item->quantity);
 
-            $user->cartItems()->delete();
-        });
+                    if ($claimed === 0) {
+                        throw new StockUnavailableException(
+                            "Stok {$item->product->name} ({$item->variant->label()}) tidak mencukupi."
+                        );
+                    }
 
-        $order = $user->orders()->latest()->first();
+                    OrderItem::create([
+                        'order_id' => $order->id,
+                        'product_id' => $item->product_id,
+                        'product_name' => $item->product->name,
+                        'size' => $item->variant->size,
+                        'color' => $item->variant->color,
+                        'price' => $item->product->price,
+                        'quantity' => $item->quantity,
+                        'subtotal' => $item->subtotal(),
+                    ]);
+                }
 
-        return redirect()->route('orders.show', $order)->with('success', 'Pesanan berhasil dibuat! Bukti transfer Anda akan diverifikasi oleh admin sebelum pesanan diproses.');
+                $user->cartItems()->delete();
+
+                return $order;
+            });
+        } catch (StockUnavailableException $e) {
+            // The order was rolled back, so drop the now-orphaned upload.
+            Storage::disk('payment_proofs')->delete($paymentProof);
+
+            return back()->with('error', $e->getMessage());
+        }
+
+        return redirect()
+            ->route('orders.show', $order)
+            ->with('success', 'Pesanan berhasil dibuat! Bukti transfer Anda akan diverifikasi oleh admin sebelum pesanan diproses.');
     }
 }

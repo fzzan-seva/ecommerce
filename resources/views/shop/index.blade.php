@@ -21,8 +21,13 @@
 
 @if($products->isEmpty())
     <div class="empty-state">
-        <h3>Produk tidak ditemukan</h3>
-        <p>Coba kata kunci atau kategori lain.</p>
+        @if(request('q') || request('category'))
+            <h3>Produk tidak ditemukan</h3>
+            <p>Coba kata kunci atau kategori lain.</p>
+        @else
+            <h3>Belum ada produk</h3>
+            <p>Admin belum menambahkan produk ke etalase. Silakan kembali beberapa saat lagi.</p>
+        @endif
     </div>
 @else
     <div class="product-grid">

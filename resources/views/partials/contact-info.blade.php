@@ -10,7 +10,7 @@
         </div>
         <div class="contact-item">
             <strong class="text-gold">Instagram</strong>
-            <p><a href="{{ config('fqueensha.instagram_url') }}" target="_blank">@{{ config('fqueensha.instagram') }}</a></p>
+            <p><a href="{{ config('fqueensha.instagram_url') }}" target="_blank">@fqueensha.instagram</a></p>
         </div>
     </div>
 </div>

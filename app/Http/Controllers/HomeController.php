@@ -38,6 +38,9 @@ class HomeController extends Controller
             ->where('is_active', true)
             ->where('id', '!=', $product->id)
             ->when($product->category_id, fn ($q) => $q->where('category_id', $product->category_id))
+            // Without an ORDER BY, LIMIT 4 returns an arbitrary four rows, so the
+            // "related products" strip changed on every request.
+            ->latest('id')
             ->take(4)
             ->get();
 

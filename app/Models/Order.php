@@ -85,6 +85,8 @@ class Order extends Model
 
     public function paymentProofUrl(): ?string
     {
-        return $this->payment_proof ? asset('storage/' . $this->payment_proof) : null;
+        // Routed through an authorised controller instead of the public
+        // storage symlink, so receipts are not world-readable.
+        return $this->payment_proof ? route('payment-proofs.show', $this) : null;
     }
 }

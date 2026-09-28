@@ -49,13 +49,17 @@ class AuthController extends Controller
             'password' => ['required', 'confirmed', Password::defaults()],
         ]);
 
-        $user = User::create([
+        $user = new User([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'phone' => $validated['phone'] ?? null,
             'password' => $validated['password'],
-            'role' => 'user',
         ]);
+
+        // Set explicitly rather than relying on $fillable / the column default,
+        // so a self-registered account can never be born with a privileged role.
+        $user->role = 'user';
+        $user->save();
 
         Auth::login($user);
 

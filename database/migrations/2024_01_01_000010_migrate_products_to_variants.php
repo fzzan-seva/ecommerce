@@ -59,6 +59,15 @@ return new class extends Migration
         }
 
         if (Schema::hasColumn('cart_items', 'product_id')) {
+            // The cart_items_product_id_foreign FK is currently satisfied by the
+            // (user_id, product_id) unique key, so MySQL/MariaDB refuses to drop it
+            // ("ERROR 1553 Cannot drop index ... needed in a foreign key constraint").
+            // Give the FK a dedicated index first, otherwise the key survives and a
+            // customer can only ever hold one cart row per product.
+            Schema::table('cart_items', function (Blueprint $table) {
+                $table->index('product_id');
+            });
+
             try {
                 Schema::table('cart_items', function (Blueprint $table) {
                     $table->dropUnique(['user_id', 'product_id']);

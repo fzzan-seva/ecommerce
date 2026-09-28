@@ -44,6 +44,22 @@ return [
             'throw' => false,
         ],
 
+        /*
+        | Payment proofs are bank transfer receipts — customer identity
+        | documents. They must NOT live under storage/app/public, because
+        | `php artisan storage:link` mirrors that entire directory into
+        | public/storage, which leaves every receipt fetchable by URL for
+        | anyone who ever learns (or guesses, or scrapes) the filename.
+        | This disk sits outside the symlink and is only ever read through
+        | PaymentProofController, which checks ownership first.
+        */
+        'payment_proofs' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private'),
+            'visibility' => 'private',
+            'throw' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

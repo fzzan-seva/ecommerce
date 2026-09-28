@@ -12,11 +12,13 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
+    // NOTE: 'role' is deliberately NOT mass-assignable. A privileged column in
+    // $fillable is a privilege-escalation landmine the moment some other code
+    // path does User::create($request->all()) or ->update($request->all()).
     protected $fillable = [
         'name',
         'email',
         'password',
-        'role',
         'phone',
     ];
 

@@ -12,21 +12,32 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        User::create([
+        // Passwords are randomised so a seeded database never ships a guessable
+        // credential. The generated value is printed once during seeding.
+        $adminPassword = $this->randomPassword();
+
+        $admin = new User([
             'name' => 'Admin FQueensha',
             'email' => 'admin@fqueensha.com',
-            'password' => 'password',
-            'role' => 'admin',
+            'password' => $adminPassword,
             'phone' => '0812-1453-1169',
         ]);
+        $admin->role = 'admin';
+        $admin->save();
 
-        User::create([
+        $customerPassword = $this->randomPassword();
+
+        $customer = new User([
             'name' => 'Siti Aminah',
             'email' => 'user@fqueensha.com',
-            'password' => 'password',
-            'role' => 'user',
+            'password' => $customerPassword,
             'phone' => '081298765432',
         ]);
+        $customer->role = 'user';
+        $customer->save();
+
+        $this->command?->warn('  Admin  : admin@fqueensha.com  /  ' . $adminPassword);
+        $this->command?->warn('  Customer: user@fqueensha.com  /  ' . $customerPassword);
 
         $categories = [
             ['name' => 'Gamis Daily', 'slug' => 'gamis-daily'],
@@ -138,5 +149,10 @@ class DatabaseSeeder extends Seeder
                 $product->variants()->create($variant);
             }
         }
+    }
+
+    private function randomPassword(): string
+    {
+        return Str::password(16);
     }
 }
