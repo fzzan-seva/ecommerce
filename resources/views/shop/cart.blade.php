@@ -27,7 +27,7 @@
                         </form>
                     </div>
                     <div class="cart-item-actions">
-                        <p class="text-gold sans">Rp {{ number_format($item->subtotal(), 0, ',', '.') }}</p>
+                        <p class="text-gold sans">{{ price($item->subtotal()) }}</p>
                         <form action="{{ route('cart.destroy', $item) }}" method="POST" class="mt-1">
                             @csrf @method('DELETE')
                             <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
@@ -38,9 +38,9 @@
         </div>
         <div class="cart-summary sans">
             <h3 class="text-gold mb-2">Ringkasan</h3>
-            <div class="row"><span>Subtotal</span><span>Rp {{ number_format($subtotal, 0, ',', '.') }}</span></div>
-            <div class="row"><span>Ongkir</span><span>Rp 15.000</span></div>
-            <div class="row total flex justify-between"><span>Total</span><span>Rp {{ number_format($subtotal + 15000, 0, ',', '.') }}</span></div>
+            <div class="row"><span>Subtotal</span><span>{{ price($subtotal) }}</span></div>
+            <div class="row"><span>Ongkir</span><span>{{ price($shipping) }}</span></div>
+            <div class="row total flex justify-between"><span>Total</span><span>{{ price($subtotal + $shipping) }}</span></div>
             <a href="{{ route('checkout.index') }}" class="btn btn-gold btn-block mt-2">Checkout</a>
         </div>
     </div>

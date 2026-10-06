@@ -13,8 +13,9 @@ class CartController extends Controller
     {
         $items = auth()->user()->cartItems()->with(['product', 'variant'])->get();
         $subtotal = $items->sum(fn ($item) => $item->subtotal());
+        $shipping = shop()->shippingCost();
 
-        return view('shop.cart', compact('items', 'subtotal'));
+        return view('shop.cart', compact('items', 'subtotal', 'shipping'));
     }
 
     public function store(Request $request, Product $product)
@@ -36,7 +37,7 @@ class CartController extends Controller
 
         $maxQty = min($variant->stock, 99);
         if ($validated['quantity'] > $maxQty) {
-            return back()->with('error', 'Stok tidak mencukupi. Tersedia: ' . $variant->stock);
+            return back()->with('error', 'Stok tidak mencukupi. Tersedia: '.$variant->stock);
         }
 
         $item = CartItem::firstOrNew([
@@ -48,7 +49,7 @@ class CartController extends Controller
         $newQty = ($item->exists ? $item->quantity : 0) + $validated['quantity'];
 
         if ($newQty > $variant->stock) {
-            return back()->with('error', 'Stok tidak mencukupi. Tersedia: ' . $variant->stock);
+            return back()->with('error', 'Stok tidak mencukupi. Tersedia: '.$variant->stock);
         }
 
         $item->quantity = $newQty;
@@ -62,10 +63,19 @@ class CartController extends Controller
         abort_unless($cartItem->user_id === auth()->id(), 403);
 
         $cartItem->load('variant');
+
+        // The variant can disappear while it sits in the cart (product edited
+        // by an admin). Drop the stale row instead of crashing on a null stock.
+        if (! $cartItem->variant) {
+            $cartItem->delete();
+
+            return back()->with('error', 'Varian ini sudah tidak tersedia dan dihapus dari keranjang.');
+        }
+
         $maxStock = $cartItem->variant->stock;
 
         $validated = $request->validate([
-            'quantity' => ['required', 'integer', 'min:1', 'max:' . max(1, $maxStock)],
+            'quantity' => ['required', 'integer', 'min:1', 'max:'.max(1, $maxStock)],
         ]);
 
         $cartItem->update(['quantity' => $validated['quantity']]);

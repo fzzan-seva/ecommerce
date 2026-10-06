@@ -58,9 +58,13 @@ return [
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
-            'options' => extension_loaded('pdo_mysql') ? array_filter([
-                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
-            ]) : [],
+            // PHP 8.5 deprecates the PDO::MYSQL_* constants in favour of
+            // Pdo\Mysql::*. Only touch a constant when the setting is actually
+            // used, and prefer the modern one where it exists, so fresh
+            // installs stay silent on every supported PHP version.
+            'options' => extension_loaded('pdo_mysql') && env('MYSQL_ATTR_SSL_CA')
+                ? [(defined('Pdo\Mysql::ATTR_SSL_CA') ? \Pdo\Mysql::ATTR_SSL_CA : PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA')]
+                : [],
         ],
 
         'pgsql' => [

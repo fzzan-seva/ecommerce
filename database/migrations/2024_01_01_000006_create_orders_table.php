@@ -20,7 +20,7 @@ return new class extends Migration
             $table->decimal('shipping_cost', 12, 2)->default(15000);
             $table->decimal('total', 12, 2);
             $table->enum('status', ['pending', 'paid', 'processing', 'shipped', 'completed', 'cancelled'])->default('pending');
-            $table->string('payment_method', 20)->default('gopay');
+            $table->string('payment_method', 20)->default('bank_transfer');
             $table->text('notes')->nullable();
             $table->timestamps();
         });

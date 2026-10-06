@@ -28,7 +28,7 @@ class Product extends Model
     {
         static::creating(function (Product $product) {
             if (empty($product->slug)) {
-                $product->slug = Str::slug($product->name) . '-' . Str::random(4);
+                $product->slug = Str::slug($product->name).'-'.Str::random(4);
             }
         });
     }
@@ -69,15 +69,15 @@ class Product extends Model
 
     public function getImageUrlAttribute(): string
     {
-        if ($this->image && file_exists(public_path('storage/' . $this->image))) {
-            return asset('storage/' . $this->image);
+        if ($this->image && file_exists(public_path('storage/'.$this->image))) {
+            return asset('storage/'.$this->image);
         }
 
-        return 'https://placehold.co/400x500/0a0a0a/c9a227?text=FQueensha';
+        return 'https://placehold.co/400x500/0a0a0a/c9a227?text='.rawurlencode(shop()->name());
     }
 
     public function formattedPrice(): string
     {
-        return 'Rp ' . number_format($this->price, 0, ',', '.');
+        return price($this->price);
     }
 }

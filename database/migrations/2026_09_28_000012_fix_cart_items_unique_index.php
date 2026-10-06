@@ -34,9 +34,13 @@ return new class extends Migration
 
         // The FK needs an index whose FIRST column is product_id.
         if (! $this->hasIndexStartingWith('product_id')) {
-            Schema::table('cart_items', function (Blueprint $table) {
-                $table->index('product_id');
-            });
+            try {
+                Schema::table('cart_items', function (Blueprint $table) {
+                    $table->index('product_id');
+                });
+            } catch (\Throwable $e) {
+                // Index may already exist in a shape this introspection missed.
+            }
         }
 
         $this->dropUniqueIfPresent('cart_items', ['user_id', 'product_id']);
@@ -65,9 +69,13 @@ return new class extends Migration
             });
 
         if (! $this->hasIndexStartingWith('product_id')) {
-            Schema::table('cart_items', function (Blueprint $table) {
-                $table->index('product_id');
-            });
+            try {
+                Schema::table('cart_items', function (Blueprint $table) {
+                    $table->index('product_id');
+                });
+            } catch (\Throwable $e) {
+                // Ignore.
+            }
         }
 
         Schema::table('cart_items', function (Blueprint $table) {
@@ -78,7 +86,7 @@ return new class extends Migration
     private function hasIndexStartingWith(string $column): bool
     {
         foreach ($this->indexes() as $index) {
-            if ($index['seq'] === 1 && $index['column'] === $column) {
+            if ((int) $index['seq'] === 1 && $index['column'] === $column) {
                 return true;
             }
         }
@@ -88,8 +96,6 @@ return new class extends Migration
 
     private function dropUniqueIfPresent(string $table, array $columns): void
     {
-        $name = $table . '_' . implode('_', $columns) . '_unique';
-
         try {
             Schema::table($table, function (Blueprint $blueprint) use ($columns) {
                 $blueprint->dropUnique($columns);
@@ -100,13 +106,44 @@ return new class extends Migration
     }
 
     /**
-     * @return array<int, array{name: string, seq: int, column: string}>
+     * Index introspection across the supported drivers. Without a driver split
+     * this migration crashed on SQLite with `SHOW INDEX` syntax errors.
+     *
+     * @return array<int, array{name: string, seq: int|string, column: string}>
      */
     private function indexes(): array
     {
+        $driver = DB::connection()->getDriverName();
+
+        if ($driver === 'sqlite') {
+            $rows = [];
+
+            foreach (DB::select('pragma index_list("cart_items")') as $index) {
+                $index = (array) $index;
+                $name = $index['name'] ?? null;
+
+                if ($name === null) {
+                    continue;
+                }
+
+                foreach (DB::select("pragma index_info('".str_replace("'", "''", $name)."')") as $column) {
+                    $column = (array) $column;
+
+                    $rows[] = [
+                        'name' => $name,
+                        'seq' => $column['seqno'] ?? 0,
+                        'column' => $column['name'] ?? '',
+                    ];
+                }
+            }
+
+            return $rows;
+        }
+
+        // MySQL / MariaDB.
         $rows = [];
 
-        foreach (DB::select('show index from ' . $this->grammar()->wrapTable('cart_items')) as $row) {
+        foreach (DB::select('show index from '.DB::getQueryGrammar()->wrapTable('cart_items')) as $row) {
             $data = (array) $row;
 
             $rows[] = [
@@ -117,10 +154,5 @@ return new class extends Migration
         }
 
         return $rows;
-    }
-
-    private function grammar()
-    {
-        return DB::connection()->getQueryGrammar();
     }
 };

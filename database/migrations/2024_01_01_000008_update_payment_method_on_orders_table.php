@@ -9,14 +9,16 @@ return new class extends Migration
     public function up(): void
     {
         if (Schema::getConnection()->getDriverName() === 'mysql') {
-            DB::statement("ALTER TABLE orders MODIFY payment_method VARCHAR(20) NOT NULL DEFAULT 'gopay'");
+            DB::statement("ALTER TABLE orders MODIFY payment_method VARCHAR(20) NOT NULL DEFAULT 'bank_transfer'");
         }
     }
 
     public function down(): void
     {
+        // Mirrors up(): the generic VARCHAR(20) shape is produced by migration
+        // 2024_01_01_000006 on fresh installs, so there is nothing to revert to.
         if (Schema::getConnection()->getDriverName() === 'mysql') {
-            DB::statement("ALTER TABLE orders MODIFY payment_method ENUM('cod','transfer') NOT NULL DEFAULT 'cod'");
+            DB::statement("ALTER TABLE orders MODIFY payment_method VARCHAR(20) NOT NULL DEFAULT 'bank_transfer'");
         }
     }
 };

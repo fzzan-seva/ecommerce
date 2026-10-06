@@ -1,8 +1,8 @@
 {
-    "name": "laravel/laravel",
+    "name": "fzzan-seva/laravel-ecommerce",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
-    "keywords": ["laravel", "framework"],
+    "description": "A complete Laravel e-commerce application with product variants, categories, shopping cart, checkout, manual payment proof and admin management.",
+    "keywords": ["laravel", "ecommerce", "store", "shop", "cart", "checkout"],
     "license": "MIT",
     "require": {
         "php": "^8.1",
@@ -25,7 +25,10 @@
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
-        }
+        },
+        "files": [
+            "app/helpers.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {

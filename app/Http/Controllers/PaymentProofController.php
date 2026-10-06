@@ -36,7 +36,7 @@ class PaymentProofController extends Controller
         $real = realpath($disk->path($path));
         $base = realpath($disk->path('payment-proofs'));
 
-        abort_unless($real !== false && $base !== false && str_starts_with($real, $base . DIRECTORY_SEPARATOR), 404);
+        abort_unless($real !== false && $base !== false && str_starts_with($real, $base.DIRECTORY_SEPARATOR), 404);
         abort_unless(is_file($real), 404);
 
         // Derive the type from the bytes actually on disk. The upload rule only

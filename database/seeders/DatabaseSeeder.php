@@ -13,14 +13,13 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Passwords are randomised so a seeded database never ships a guessable
-        // credential. The generated value is printed once during seeding.
+        // credential. The generated values are printed once during seeding.
         $adminPassword = $this->randomPassword();
 
         $admin = new User([
-            'name' => 'Admin FQueensha',
-            'email' => 'admin@fqueensha.com',
+            'name' => 'Admin User',
+            'email' => 'admin@example.com',
             'password' => $adminPassword,
-            'phone' => '0812-1453-1169',
         ]);
         $admin->role = 'admin';
         $admin->save();
@@ -28,125 +27,115 @@ class DatabaseSeeder extends Seeder
         $customerPassword = $this->randomPassword();
 
         $customer = new User([
-            'name' => 'Siti Aminah',
-            'email' => 'user@fqueensha.com',
+            'name' => 'Demo Customer',
+            'email' => 'customer@example.com',
             'password' => $customerPassword,
-            'phone' => '081298765432',
         ]);
         $customer->role = 'user';
         $customer->save();
 
-        $this->command?->warn('  Admin  : admin@fqueensha.com  /  ' . $adminPassword);
-        $this->command?->warn('  Customer: user@fqueensha.com  /  ' . $customerPassword);
+        $this->command?->info('Demo credentials (shown once, store them safely):');
+        $this->command?->warn('  Admin    : admin@example.com / '.$adminPassword);
+        $this->command?->warn('  Customer : customer@example.com / '.$customerPassword);
 
+        $this->seedCatalog();
+    }
+
+    private function seedCatalog(): void
+    {
         $categories = [
-            ['name' => 'Gamis Daily', 'slug' => 'gamis-daily'],
-            ['name' => 'Gamis Premium', 'slug' => 'gamis-premium'],
-            ['name' => 'Gamis Syar\'i', 'slug' => 'gamis-syari'],
-            ['name' => 'Set Gamis', 'slug' => 'set-gamis'],
+            ['name' => 'Dresses', 'slug' => 'dresses'],
+            ['name' => 'Tops', 'slug' => 'tops'],
+            ['name' => 'Outerwear', 'slug' => 'outerwear'],
+            ['name' => 'Accessories', 'slug' => 'accessories'],
         ];
 
-        foreach ($categories as $cat) {
-            Category::create($cat);
+        foreach ($categories as $category) {
+            Category::create($category);
         }
 
         $products = [
             [
-                'name' => 'Gamis Queensha Elegant Black',
-                'category' => 'gamis-premium',
+                'name' => 'Classic Dress',
+                'category' => 'dresses',
                 'price' => 389000,
+                'description' => 'A timeless classic dress cut from a comfortable blend. Easy to style for work or a night out.',
                 'variants' => [
-                    ['size' => 'M', 'color' => 'Hitam', 'stock' => 8],
-                    ['size' => 'L', 'color' => 'Hitam', 'stock' => 10],
-                    ['size' => 'XL', 'color' => 'Hitam', 'stock' => 7],
+                    ['size' => 'M', 'color' => 'Black', 'stock' => 8],
+                    ['size' => 'L', 'color' => 'Black', 'stock' => 10],
+                    ['size' => 'XL', 'color' => 'Black', 'stock' => 7],
                 ],
             ],
             [
-                'name' => 'Gamis Silk Gold Edition',
-                'category' => 'gamis-premium',
+                'name' => 'Premium Dress',
+                'category' => 'dresses',
                 'price' => 459000,
+                'description' => 'Our premium dress with a refined finish, soft drape and careful stitching throughout.',
                 'variants' => [
-                    ['size' => 'S', 'color' => 'Emas', 'stock' => 5],
-                    ['size' => 'M', 'color' => 'Emas', 'stock' => 6],
-                    ['size' => 'L', 'color' => 'Emas', 'stock' => 4],
+                    ['size' => 'S', 'color' => 'Ivory', 'stock' => 5],
+                    ['size' => 'M', 'color' => 'Ivory', 'stock' => 6],
+                    ['size' => 'L', 'color' => 'Ivory', 'stock' => 4],
                 ],
             ],
             [
-                'name' => 'Gamis Daily Comfort Navy',
-                'category' => 'gamis-daily',
+                'name' => 'Casual Wear',
+                'category' => 'tops',
                 'price' => 249000,
+                'description' => 'An everyday casual top that pairs with anything in your wardrobe.',
                 'variants' => [
                     ['size' => 'M', 'color' => 'Navy', 'stock' => 12],
                     ['size' => 'L', 'color' => 'Navy', 'stock' => 15],
                     ['size' => 'XL', 'color' => 'Navy', 'stock' => 8],
-                    ['size' => 'XXL', 'color' => 'Navy', 'stock' => 5],
                 ],
             ],
             [
-                'name' => 'Gamis Syari Full Length Maroon',
-                'category' => 'gamis-syari',
-                'price' => 329000,
+                'name' => 'Basic Collection',
+                'category' => 'tops',
+                'price' => 199000,
+                'description' => 'A wardrobe staple from the basic collection — simple, versatile and affordable.',
                 'variants' => [
-                    ['size' => 'M', 'color' => 'Maroon', 'stock' => 7],
-                    ['size' => 'L', 'color' => 'Maroon', 'stock' => 8],
-                    ['size' => 'XL', 'color' => 'Maroon', 'stock' => 5],
+                    ['size' => 'S', 'color' => 'White', 'stock' => 10],
+                    ['size' => 'M', 'color' => 'White', 'stock' => 14],
+                    ['size' => 'L', 'color' => 'White', 'stock' => 9],
                 ],
             ],
             [
-                'name' => 'Set Gamis + Khimar Ivory',
-                'category' => 'set-gamis',
-                'price' => 499000,
-                'variants' => [
-                    ['size' => 'S', 'color' => 'Ivory', 'stock' => 4],
-                    ['size' => 'M', 'color' => 'Ivory', 'stock' => 5],
-                    ['size' => 'L', 'color' => 'Ivory', 'stock' => 3],
-                ],
-            ],
-            [
-                'name' => 'Gamis Brokat Hitam Emas',
-                'category' => 'gamis-premium',
+                'name' => 'Everyday Jacket',
+                'category' => 'outerwear',
                 'price' => 549000,
+                'description' => 'A light jacket for cooler evenings, with a clean cut and practical pockets.',
                 'variants' => [
-                    ['size' => 'M', 'color' => 'Hitam-Emas', 'stock' => 4],
-                    ['size' => 'L', 'color' => 'Hitam-Emas', 'stock' => 4],
+                    ['size' => 'M', 'color' => 'Olive', 'stock' => 6],
+                    ['size' => 'L', 'color' => 'Olive', 'stock' => 6],
+                    ['size' => 'XL', 'color' => 'Olive', 'stock' => 4],
                 ],
             ],
             [
-                'name' => 'Gamis Polos Dusty Rose',
-                'category' => 'gamis-daily',
-                'price' => 219000,
+                'name' => 'Essential Scarf',
+                'category' => 'accessories',
+                'price' => 129000,
+                'description' => 'A soft finishing accessory that completes any outfit.',
                 'variants' => [
-                    ['size' => 'S', 'color' => 'Dusty Rose', 'stock' => 10],
-                    ['size' => 'M', 'color' => 'Dusty Rose', 'stock' => 12],
-                    ['size' => 'L', 'color' => 'Dusty Rose', 'stock' => 8],
-                    ['size' => 'XL', 'color' => 'Dusty Rose', 'stock' => 5],
-                ],
-            ],
-            [
-                'name' => 'Gamis Plisket Premium Olive',
-                'category' => 'gamis-daily',
-                'price' => 279000,
-                'variants' => [
-                    ['size' => 'M', 'color' => 'Olive', 'stock' => 8],
-                    ['size' => 'L', 'color' => 'Olive', 'stock' => 9],
-                    ['size' => 'XL', 'color' => 'Olive', 'stock' => 5],
+                    ['size' => 'One Size', 'color' => 'Grey', 'stock' => 20],
+                    ['size' => 'One Size', 'color' => 'Burgundy', 'stock' => 15],
                 ],
             ],
         ];
 
-        foreach ($products as $p) {
-            $category = Category::where('slug', $p['category'])->first();
-            $product = Product::create([
-                'category_id' => $category->id,
-                'name' => $p['name'],
-                'slug' => Str::slug($p['name']) . '-' . Str::random(4),
-                'description' => 'Gamis perempuan berkualitas dari FQueensha. Bahan nyaman, jahitan rapi, dan desain elegan untuk tampil anggun setiap hari.',
-                'price' => $p['price'],
+        foreach ($products as $product) {
+            $category = Category::where('slug', $product['category'])->first();
+
+            $model = Product::create([
+                'category_id' => $category?->id,
+                'name' => $product['name'],
+                'slug' => Str::slug($product['name']).'-'.Str::random(4),
+                'description' => $product['description'],
+                'price' => $product['price'],
                 'is_active' => true,
             ]);
 
-            foreach ($p['variants'] as $variant) {
-                $product->variants()->create($variant);
+            foreach ($product['variants'] as $variant) {
+                $model->variants()->create($variant);
             }
         }
     }

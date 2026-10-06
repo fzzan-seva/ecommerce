@@ -60,27 +60,34 @@ class Order extends Model
 
     public function formattedTotal(): string
     {
-        return 'Rp ' . number_format($this->total, 0, ',', '.');
+        return price($this->total);
     }
 
     public function paymentMethodLabel(): string
     {
-        $methods = config('fqueensha.payment_methods', []);
+        $method = shop()->paymentMethod($this->payment_method);
 
-        if (isset($methods[$this->payment_method])) {
-            return $methods[$this->payment_method]['label'];
+        if ($method !== null) {
+            return $method['label'];
         }
 
-        return match ($this->payment_method) {
-            'cod' => 'COD (lama)',
-            'transfer' => 'Transfer (lama)',
-            default => ucfirst($this->payment_method),
-        };
+        // The method may have been renamed or disabled since the order was
+        // placed — keep old orders readable.
+        return ucfirst(str_replace('_', ' ', (string) $this->payment_method));
     }
 
     public function paymentAccount(): ?string
     {
-        return config("fqueensha.payment_methods.{$this->payment_method}.account");
+        $method = shop()->paymentMethod($this->payment_method);
+
+        return $method !== null && $method['account'] !== '' ? $method['account'] : null;
+    }
+
+    public function paymentAccountName(): ?string
+    {
+        $method = shop()->paymentMethod($this->payment_method);
+
+        return $method !== null && $method['account_name'] !== '' ? $method['account_name'] : null;
     }
 
     public function paymentProofUrl(): ?string

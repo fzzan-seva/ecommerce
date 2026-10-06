@@ -9,7 +9,7 @@
     <p><strong>Pelanggan:</strong> {{ $order->user->name }} ({{ $order->user->email }})</p>
     <p><strong>Penerima:</strong> {{ $order->recipient_name }} — {{ $order->phone }}</p>
     <p><strong>Alamat:</strong> {{ $order->shipping_address }}</p>
-    <p><strong>Pembayaran:</strong> {{ $order->paymentMethodLabel() }} — {{ $order->paymentAccount() }}</p>
+    <p><strong>Pembayaran:</strong> {{ $order->paymentMethodLabel() }}@if($order->paymentAccount()) — {{ $order->paymentAccount() }}{{ $order->paymentAccountName() ? ' (a.n. ' . $order->paymentAccountName() . ')' : '' }}@endif</p>
     @if($order->paymentProofUrl())
         <p class="mt-1"><strong>Bukti Transfer:</strong></p>
         <a href="{{ $order->paymentProofUrl() }}" target="_blank">
@@ -43,9 +43,9 @@
                     <tr>
                         <td>{{ $item->product_name }}</td>
                         <td>{{ $item->variantLabel() }}</td>
-                        <td>Rp {{ number_format($item->price, 0, ',', '.') }}</td>
+                        <td>{{ price($item->price) }}</td>
                         <td>{{ $item->quantity }}</td>
-                        <td>Rp {{ number_format($item->subtotal, 0, ',', '.') }}</td>
+                        <td>{{ price($item->subtotal) }}</td>
                     </tr>
                 @endforeach
             </tbody>

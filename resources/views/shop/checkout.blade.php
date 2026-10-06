@@ -24,7 +24,7 @@
             <a href="{{ route('addresses.create') }}" class="btn btn-outline btn-sm">+ Alamat Baru</a>
 
             <h3 class="mt-2">Metode Pembayaran</h3>
-            <p class="text-muted mb-2" style="font-size:0.9rem">Hanya transfer — pilih salah satu:</p>
+            <p class="text-muted mb-2" style="font-size:0.9rem">Pilih salah satu metode pembayaran berikut:</p>
             @include('shop.checkout._payment_methods')
 
             <div class="form-group mt-2">
@@ -40,7 +40,7 @@
             </div>
 
             <div class="alert alert-warning mt-2">
-                <strong>Catatan Penting:</strong> Jika bukti transfer yang dilampirkan tidak sesuai (jumlah, rekening tujuan, atau atas nama yang salah), maka uang akan dianggap hangus dan barang <strong>tidak akan dikirimkan</strong>.
+                <strong>Catatan:</strong> Pastikan bukti transfer yang diunggah sesuai dengan total pesanan dan metode pembayaran yang dipilih. Pesanan diproses setelah admin memverifikasi bukti transfer.
             </div>
         </div>
 
@@ -49,12 +49,12 @@
             @foreach($items as $item)
                 <div class="row">
                     <span>{{ $item->product->name }} ({{ $item->variant->label() }}) x{{ $item->quantity }}</span>
-                    <span>Rp {{ number_format($item->subtotal(), 0, ',', '.') }}</span>
+                    <span>{{ price($item->subtotal()) }}</span>
                 </div>
             @endforeach
-            <div class="row"><span>Subtotal</span><span>Rp {{ number_format($subtotal, 0, ',', '.') }}</span></div>
-            <div class="row"><span>Ongkir</span><span>Rp {{ number_format($shipping, 0, ',', '.') }}</span></div>
-            <div class="row total"><span>Total</span><span>Rp {{ number_format($subtotal + $shipping, 0, ',', '.') }}</span></div>
+            <div class="row"><span>Subtotal</span><span>{{ price($subtotal) }}</span></div>
+            <div class="row"><span>Ongkir</span><span>{{ price($shipping) }}</span></div>
+            <div class="row total"><span>Total</span><span>{{ price($subtotal + $shipping) }}</span></div>
             <button type="submit" class="btn btn-gold btn-block mt-2">Buat Pesanan</button>
         </div>
     </form>

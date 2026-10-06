@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Admin') — FQueensha</title>
+    <title>@hasSection('title')@yield('title') — @endif Admin {{ shop()->name() }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/fqueensha.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
 </head>
 <body>
     <div class="admin-layout sans">
@@ -15,12 +15,20 @@
         </button>
         <div class="admin-sidebar-overlay" id="admin-overlay"></div>
         <aside class="admin-sidebar" id="admin-sidebar">
-            <a href="{{ route('admin.dashboard') }}" class="logo">F<span>Queensha</span></a>
+            <a href="{{ route('admin.dashboard') }}" class="logo">
+                @if(shop()->logo())
+                    <img src="{{ asset('storage/' . shop()->logo()) }}" alt="{{ shop()->name() }}" style="max-height:38px;width:auto">
+                @else
+                    {{ shop()->name() }}
+                @endif
+            </a>
             <nav class="admin-nav">
                 <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">Dashboard</a>
                 <a href="{{ route('admin.products.index') }}" class="{{ request()->routeIs('admin.products.*') ? 'active' : '' }}">Produk</a>
+                <a href="{{ route('admin.categories.index') }}" class="{{ request()->routeIs('admin.categories.*') ? 'active' : '' }}">Kategori</a>
                 <a href="{{ route('admin.orders.index') }}" class="{{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">Pesanan</a>
                 <a href="{{ route('admin.users.index') }}" class="{{ request()->routeIs('admin.users.*') ? 'active' : '' }}">Pengguna</a>
+                <a href="{{ route('admin.settings.edit') }}" class="{{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">Pengaturan Toko</a>
                 <a href="{{ route('home') }}">Lihat Toko</a>
             </nav>
             <form action="{{ route('logout') }}" method="POST" class="mt-2">
@@ -31,6 +39,9 @@
         <main class="admin-main">
             @if(session('success'))
                 <div class="alert alert-success">{{ session('success') }}</div>
+            @endif
+            @if(session('error'))
+                <div class="alert alert-error">{{ session('error') }}</div>
             @endif
             @if($errors->any())
                 <div class="alert alert-error">
@@ -56,5 +67,6 @@
         });
         overlay?.addEventListener('click', closeAdminMenu);
     </script>
+    @stack('scripts')
 </body>
 </html>

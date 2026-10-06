@@ -4,23 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'FQueensha') — Gamis Elegan</title>
+    <title>@hasSection('title')@yield('title') — @endif{{ shop()->name() }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/fqueensha.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     @stack('styles')
 </head>
 <body>
     <header class="site-header">
         <div class="container header-inner sans">
-            <a href="{{ route('home') }}" class="logo">F<span>Queensha</span></a>
+            <a href="{{ route('home') }}" class="logo">
+                @if(shop()->logo())
+                    <img src="{{ asset('storage/' . shop()->logo()) }}" alt="{{ shop()->name() }}" style="max-height:42px;width:auto">
+                @else
+                    {{ shop()->name() }}
+                @endif
+            </a>
 
             <button type="button" class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Menu">
                 <span></span><span></span><span></span>
             </button>
 
             <form action="{{ route('home') }}" method="GET" class="search-form">
-                <input type="text" name="q" placeholder="Cari gamis..." value="{{ request('q') }}">
+                <input type="text" name="q" placeholder="Cari produk..." value="{{ request('q') }}">
                 <button type="submit">Cari</button>
             </form>
 
@@ -67,7 +73,7 @@
 
     <footer class="footer sans">
         @include('partials.contact-info')
-        <p class="mt-2">&copy; {{ date('Y') }} <strong class="text-gold">FQueensha</strong> — Koleksi Gamis Perempuan Elegan</p>
+        <p class="mt-2">&copy; {{ date('Y') }} <strong class="text-gold">{{ shop()->name() }}</strong> — {{ shop()->tagline() }}</p>
     </footer>
 
     <script>

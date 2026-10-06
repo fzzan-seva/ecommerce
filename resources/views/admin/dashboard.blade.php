@@ -13,7 +13,7 @@
     <div class="stat-card"><div class="value">{{ $stats['users'] }}</div><div class="label">Pengguna</div></div>
     <div class="stat-card"><div class="value">{{ $stats['orders'] }}</div><div class="label">Total Pesanan</div></div>
     <div class="stat-card"><div class="value">{{ $stats['pending_orders'] }}</div><div class="label">Menunggu</div></div>
-    <div class="stat-card"><div class="value" style="font-size:1.1rem">Rp {{ number_format($stats['revenue'], 0, ',', '.') }}</div><div class="label">Pendapatan</div></div>
+    <div class="stat-card"><div class="value" style="font-size:1.1rem">{{ price($stats['revenue']) }}</div><div class="label">Pendapatan</div></div>
 </div>
 
 <div class="dashboard-grid">

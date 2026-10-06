@@ -4,9 +4,11 @@
 
 @section('content')
 <section class="hero">
-    <h1>FQueensha</h1>
-    <p>Koleksi gamis perempuan elegan — nuansa hitam & emas untuk penampilan anggun</p>
-    <p class="sans text-muted mt-1" style="font-size:0.9rem">{{ config('fqueensha.location') }}</p>
+    <h1>{{ shop()->name() }}</h1>
+    <p>{{ shop()->description() ?: shop()->tagline() }}</p>
+    @if(shop()->address())
+        <p class="sans text-muted mt-1" style="font-size:0.9rem">{{ shop()->address() }}</p>
+    @endif
 </section>
 
 <div class="category-pills sans">

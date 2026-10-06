@@ -1,16 +1,18 @@
 <?php
 
 use App\Http\Controllers\AddressController;
+use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Admin\SettingsController as AdminSettingsController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentProofController;
-use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\OrderController as AdminOrderController;
-use App\Http\Controllers\Admin\ProductController as AdminProductController;
-use App\Http\Controllers\Admin\UserController as AdminUserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -34,7 +36,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/keranjang/{cartItem}', [CartController::class, 'update'])->name('cart.update');
     Route::delete('/keranjang/{cartItem}', [CartController::class, 'destroy'])->name('cart.destroy');
 
-    Route::resource('alamat', AddressController::class)->names('addresses')->parameters(['alamat' => 'address']);
+    Route::resource('alamat', AddressController::class)->names('addresses')->parameters(['alamat' => 'address'])->except(['show']);
 
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
@@ -48,6 +50,11 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::resource('produk', AdminProductController::class)->names('products')->parameters(['produk' => 'product'])->except(['show']);
+    Route::resource('kategori', AdminCategoryController::class)->names('categories')->parameters(['kategori' => 'category'])->except(['show']);
+
+    Route::get('pengaturan', [AdminSettingsController::class, 'edit'])->name('settings.edit');
+    Route::put('pengaturan', [AdminSettingsController::class, 'update'])->name('settings.update');
+
     Route::get('pengguna', [AdminUserController::class, 'index'])->name('users.index');
     Route::get('pengguna/{user}', [AdminUserController::class, 'show'])->name('users.show');
 

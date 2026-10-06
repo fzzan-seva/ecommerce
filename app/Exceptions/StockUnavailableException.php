@@ -9,6 +9,4 @@ use Exception;
  * claimed atomically. Rolling the transaction back releases the order, the
  * order items and any stock already taken for earlier lines.
  */
-class StockUnavailableException extends Exception
-{
-}
+class StockUnavailableException extends Exception {}

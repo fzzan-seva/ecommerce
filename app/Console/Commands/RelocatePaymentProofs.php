@@ -55,18 +55,21 @@ class RelocatePaymentProofs extends Command
                 } else {
                     $skipped++;
                 }
+
                 continue;
             }
 
             if (! $public->exists($path)) {
                 $this->warn("  missing, cannot move: {$path}");
                 $missing++;
+
                 continue;
             }
 
             if ($dryRun) {
                 $this->line("  would move: {$path}");
                 $moved++;
+
                 continue;
             }
 

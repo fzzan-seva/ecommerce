@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="auth-card">
-    <h2>Masuk ke FQueensha</h2>
+    <h2>Masuk ke {{ shop()->name() }}</h2>
     <form method="POST" action="{{ route('login') }}">
         @csrf
         <div class="form-group sans">
