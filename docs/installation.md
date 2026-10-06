@@ -71,7 +71,7 @@ Demo credentials (shown once, store them safely):
 ```
 
 There are no default passwords anywhere in the codebase — if you lose the
-printed credentials, reset a password from the admin panel or with:
+printed credentials, reset the password with tinker:
 
 ```bash
 php artisan tinker

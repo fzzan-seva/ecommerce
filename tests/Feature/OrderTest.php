@@ -2,9 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Models\CartItem;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Product;
+use App\Models\ProductVariant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class OrderTest extends TestCase
@@ -45,6 +49,36 @@ class OrderTest extends TestCase
         ]);
 
         return $order;
+    }
+
+    /**
+     * A real order placed through the checkout flow (2 units x 50.000), so its
+     * line item records the exact variant id it consumed.
+     */
+    private function placeOrder(int $quantity = 2): Order
+    {
+        Storage::fake('payment_proofs');
+
+        $product = $this->makeProduct(['price' => 50000], [['M', 'Black', 10]]);
+        $customer = $this->makeCustomer(false);
+        $address = $this->makeAddress($customer);
+
+        CartItem::create([
+            'user_id' => $customer->id,
+            'product_id' => $product->id,
+            'product_variant_id' => $product->variants->first()->id,
+            'quantity' => $quantity,
+        ]);
+
+        $this->actingAs($customer);
+
+        $this->post('/checkout', [
+            'address_id' => $address->id,
+            'payment_method' => 'bank_transfer',
+            'payment_proof' => $this->imageFixture(),
+        ])->assertRedirect();
+
+        return Order::firstOrFail();
     }
 
     public function test_a_customer_sees_their_own_orders_only(): void
@@ -169,5 +203,56 @@ class OrderTest extends TestCase
             ->assertForbidden();
 
         $this->assertSame('pending', $order->fresh()->status);
+    }
+
+    public function test_a_checkout_order_records_the_variant_it_consumed_and_cancelling_returns_the_stock(): void
+    {
+        $order = $this->placeOrder(2);
+        $this->makeAdmin();
+
+        $item = $order->items()->firstOrFail();
+        $variant = ProductVariant::find($item->product_variant_id);
+
+        $this->assertNotNull($variant);
+        $this->assertSame('M', $variant->size);
+        $this->assertSame(8, $variant->stock); // 10 claimed at checkout
+
+        $this->patch("/admin/pesanan/{$order->id}/status", ['status' => 'cancelled'])
+            ->assertRedirect();
+
+        $this->assertSame('cancelled', $order->fresh()->status);
+        $this->assertSame(10, $variant->fresh()->stock);
+    }
+
+    public function test_cancelling_and_reactivating_skip_a_variant_that_was_deleted_and_recreated(): void
+    {
+        $order = $this->placeOrder(2);
+        $this->makeAdmin();
+
+        $item = $order->items()->firstOrFail();
+        $deletedId = $item->product_variant_id;
+
+        // The admin removes the variant (the cart is empty, so this is allowed)
+        // and later creates an identical M / Black variant with a fresh count.
+        $product = Product::findOrFail($item->product_id);
+        $product->variants()->delete();
+        $recreated = $product->variants()->create(['size' => 'M', 'color' => 'Black', 'stock' => 10]);
+
+        $this->patch("/admin/pesanan/{$order->id}/status", ['status' => 'cancelled'])
+            ->assertRedirect();
+
+        $this->assertSame('cancelled', $order->fresh()->status);
+        // The look-alike row never participated in this order's stock claim, so
+        // it must not gain phantom units.
+        $this->assertSame(10, $recreated->fresh()->stock);
+        // The historical line keeps the identity of the variant it consumed.
+        $this->assertSame($deletedId, $order->items()->firstOrFail()->product_variant_id);
+
+        // Re-activating must not silently take units off the new row either.
+        $this->patch("/admin/pesanan/{$order->id}/status", ['status' => 'paid'])
+            ->assertRedirect();
+
+        $this->assertSame('paid', $order->fresh()->status);
+        $this->assertSame(10, $recreated->fresh()->stock);
     }
 }

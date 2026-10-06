@@ -1,16 +1,55 @@
-MIT License
+Laravel E-Commerce Source Code License
 
-Copyright (c) 2026 Laravel E-Commerce contributors
+Copyright (c) 2026 fzzan-seva. All rights reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+This project is a commercial source-code template. It is distributed under the
+license below instead of a permissive license such as MIT.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+1. Grant of license
+-------------------
+
+Subject to the terms of this license, you are granted a non-exclusive,
+non-transferable, worldwide and royalty-free license to:
+
+  a. use, copy and install one copy of this software on servers or devices
+     you own or control;
+  b. modify the software; and
+  c. use the modified or unmodified software to build, operate and commercialise
+     your own end products (for example an online store or a client website),
+     without restriction and without owing us any royalty.
+
+The end products you build are yours. You may sell them, host them for paying
+customers and license them to third parties.
+
+2. Restrictions
+---------------
+
+You may NOT:
+
+  a. redistribute, resell, sublicense, rent, lend or otherwise make this
+     software — or any substantial part of it — available to third parties as
+     a product in itself, including as a template, starter kit, boilerplate,
+     source-code product or competing offering;
+  b. publish or distribute the source code (modified or not) in a way that
+     allows third parties to obtain it as a template or reusable codebase,
+     including public repositories, file-sharing sites and marketplaces;
+  c. remove or alter copyright, licence or attribution notices contained in
+     the software.
+
+For clarity, extracting application-specific code from this repository into a
+separate product that is then distributed as a template or starter kit falls
+under restriction 2(a).
+
+3. Third-party components
+-------------------------
+
+The software ships with third-party packages (notably the Laravel framework and
+its dependencies) that are distributed under their own licences, typically the
+MIT Licence. Those licences continue to apply to those components. This licence
+applies only to the code original to this project.
+
+4. No warranty
+--------------
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -19,13 +58,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-Additional terms
-----------------
-
-This project is sold and distributed as a developer template. In addition to
-the MIT License above, you may use it to build and sell your own end products
-without restriction, but you may **not** redistribute or resell this template
-itself, in whole or in part, as a competing template or source-code product.

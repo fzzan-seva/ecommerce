@@ -70,7 +70,7 @@ php artisan tinker
 
 Currency formatting goes through `price()` and reads, in order:
 `settings` table → `config/shop.php` → hard-coded default. Check
-`SHOP_CURRENCY_SYMBOL`/`SHOP_CURRENCY_POSITION` in `.env`, then look for an
+`SHOP_CURRENCY_SYMBOL` / `SHOP_CURRENCY_DECIMALS` in `.env`, then look for an
 override row in `settings`.
 
 ## Media & payment proofs
@@ -78,14 +78,15 @@ override row in `settings`.
 ### Product images do not appear
 
 - `php artisan storage:link` must succeed.
-- Check the `public` disk root (`.env`: `FILESYSTEM_DISK_PUBLIC=storage/app/public`).
+- The `public` disk root comes from `config/filesystems.php`
+  (`storage/app/public` by default); product images are stored there.
 - Re-upload the image; a broken file may have been stored.
 
 ### A customer cannot re-upload a payment proof
 
-A proof can only be uploaded while the order is `waiting_payment` or `rejected`,
-and only once per status (it is replaced after an admin rejects it). Advance the
-order or ask an admin to reject it to allow a new upload.
+The receipt is uploaded once, as part of the checkout form — the storefront has
+no second upload endpoint by design. To accept a different receipt, the admin
+contacts the customer and records the outcome through the order status.
 
 ### Payment proofs are publicly accessible
 

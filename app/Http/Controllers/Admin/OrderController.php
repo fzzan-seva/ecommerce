@@ -91,11 +91,23 @@ class OrderController extends Controller
     }
 
     /**
-     * Order items store a denormalised size/colour snapshot, so match the
-     * original variant back on (product_id, size, color).
+     * Resolve the variant row an order line's stock belongs to.
+     *
+     * New orders carry the variant id recorded at checkout, which is decisive:
+     * it keeps cancel/reactivate bookkeeping on the exact row the order
+     * consumed, even if an identical (size, colour) variant was deleted and
+     * re-created since. If that row no longer exists the line is skipped —
+     * there is nothing to return the units to.
+     *
+     * Older rows (placed before this column existed) fall back to matching the
+     * denormalised (product_id, size, colour) snapshot.
      */
     private function resolveVariantId($item): ?int
     {
+        if ($item->product_variant_id !== null) {
+            return ProductVariant::whereKey($item->product_variant_id)->value('id');
+        }
+
         if (! $item->product_id) {
             return null;
         }

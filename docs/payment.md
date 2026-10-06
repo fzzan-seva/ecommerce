@@ -2,57 +2,66 @@
 
 This project does **not** use an online payment gateway. Customers pay by manual
 transfer (or any offline method you agree on) and upload a photo/screenshot of the
-proof. An admin verifies the proof in the back office.
+proof with their order. An admin verifies the proof in the back office.
 
 ## Flow
 
-1. Customer checks out and picks a payment method (configured in
-   `config/shop.php` → `payment_methods`, optionally overridden in
+1. Customer checks out and picks a payment method (defaults from
+   `config/shop.php` → `payment_methods`, overridden at runtime from
    **Pengaturan → Metode Pembayaran**).
-2. The order is created with status `waiting_payment` and stock is deducted.
-3. On the order page the customer uploads a payment proof
-   (`Bukti Pembayaran`). The file is stored on the private `payment_proofs` disk —
-   it is never publicly accessible; only logged-in admins can view/download it.
-4. An admin opens **Pesanan**, reviews the proof and moves the order to
-   `paid` / `processing`, or rejects it with a note.
+2. The receipt upload is part of the checkout form (required,
+   JPEG/PNG/WebP up to 2 MB). The file goes straight to the private
+   `payment_proofs` disk — it is never publicly accessible; only the owning
+   customer and admins can view it.
+3. The order is created with status `pending` and stock is claimed atomically.
+4. An admin opens **Pesanan**, reviews the receipt and moves the order to
+   `paid`, `processing`, and so on.
+
+The receipt is uploaded **once, with the order** — there is no self-service
+re-upload endpoint. If an upload is unusable, the admin contacts the customer
+out of band and records the result by changing the status.
 
 ## Order statuses
 
 | Status | Meaning | Stock |
 |---|---|---|
-| `waiting_payment` | Waiting for the customer's proof | reserved |
-| `paid`, `processing`, `shipped` | Confirmed | reserved |
-| `completed` | Finished | deducted (one-time) |
-| `cancelled` | Cancelled | released |
+| `pending` | Order placed, receipt awaiting verification | claimed |
+| `paid`, `processing`, `shipped` | Confirmed / in progress | claimed |
+| `completed` | Finished | claimed |
+| `cancelled` | Cancelled | released back to the variants |
 
 Stock handling rules:
 
-- Stock is deducted when the order is placed.
-- When an order becomes `cancelled`, its reserved/completed quantities are released
-  back and `completed_at` is cleared, so re-activating the order does not double-deduct.
-- Reverting `completed` → `shipped` also restores the stock that was deducted on completion.
-- Stock is never released twice: `completed_at` guards the transition.
-- Payment methods are validated against the configured list; arbitrary values are rejected.
+- Stock is claimed once, atomically, when the order is placed.
+- Moving an order **to** `cancelled` (from any other status) releases its
+  quantities back to the exact variant rows the order consumed.
+- Moving an order **out of** `cancelled` claims those quantities again, and the
+  panel refuses with a clear message if stock has run out in the meantime — the
+  order simply stays cancelled.
+- Transitions never repeat: setting the same status twice is a no-op, so stock
+  is released or claimed exactly once per transition.
+- Payment methods are validated against the configured, enabled list; arbitrary
+  values posted to the checkout are rejected.
 
 ## Configuring methods
 
-```env
-SHOP_PAYMENT_METHODS=bank_transfer,cod
-```
+Payment methods are **not** environment variables — account numbers do not
+belong in `.env` or in a git repository. Manage them from
+**Pengaturan → Metode Pembayaran** (stored in the `settings` table), or adjust
+the placeholders in `config/shop.php` for a fresh install.
 
-Or edit them in the admin panel (**Pengaturan → Metode Pembayaran**). Labels shown
-to customers come from `SHOP_PAYMENT_LABELS` (or the settings page), e.g.
-`"Transfer BCA,Transfer Mandiri,COD"`.
+Each method has a key (`^[a-z0-9_]+$`, max 20 characters), label, type,
+account number, account name and an `enabled` toggle. Disabled methods are
+hidden from checkout **and** rejected by validation.
 
-The destination account details shown to customers are store settings
-(**Pengaturan → Rekening & Pengiriman**), stored in the `settings` table —
-no account numbers live in the source code.
+The destination account details shown to customers therefore come from the
+database settings — no account numbers live in the source code.
 
 ## Storage location
 
 Proofs live under `storage/app/private/payment-proofs/` (disk `payment_proofs`).
-They are excluded from version control and backups of the public disk are not
-needed for them — include `storage/app/private` in your backups.
+They are excluded from version control and are not part of the public
+`storage` symlink — include `storage/app/private` in your backups.
 
 If you have receipts from an older version that were stored on the public disk,
 migrate them with:

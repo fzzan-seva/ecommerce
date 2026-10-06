@@ -117,6 +117,9 @@ class CheckoutController extends Controller
                     OrderItem::create([
                         'order_id' => $order->id,
                         'product_id' => $item->product_id,
+                        // Exact variant identity: stock is released back to this
+                        // very row on cancel, never to a later look-alike variant.
+                        'product_variant_id' => $item->product_variant_id,
                         'product_name' => $item->product->name,
                         'size' => $item->variant->size,
                         'color' => $item->variant->color,

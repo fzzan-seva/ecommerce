@@ -1,6 +1,6 @@
 # Laravel E-Commerce
 
-A complete, production-ready e-commerce application built with **Laravel 10** and **Blade**.
+A complete e-commerce application template built with **Laravel 10** and **Blade**.
 It ships with a responsive storefront (product variants, categories, search, cart, checkout),
 a manual bank / e-wallet payment flow with receipt verification, customer order history,
 and a full admin panel — all white-labelled, so you rename the store, set your own payment
@@ -32,7 +32,7 @@ accounts and shipping rate from the admin panel, and start selling.
 - Payment receipts stored on a **private disk** and served only to their owner or an admin
 - Prices, totals and stock are always computed server-side; stock is claimed atomically
   at checkout so concurrent buyers cannot oversell
-- PHPUnit test suite (78 tests, 349 assertions) covering auth, cart, checkout,
+- PHPUnit test suite (80 tests, 364 assertions) covering auth, cart, checkout,
   orders, payment proofs, settings and the storefront
 
 ## Requirements
@@ -140,9 +140,13 @@ pre-made fixtures in `tests/fixtures/`, so the suite runs without the GD extensi
 
 ## License
 
-This source code is released under the [MIT License](LICENSE).
+This source code is distributed under the
+[Laravel E-Commerce Source Code License](LICENSE) — a commercial,
+source-available licence (the `license` field in `composer.json` is
+`proprietary`).
 
-It is sold and distributed as a developer template: you may use it to build and
-sell your own end products without restriction. You may **not** redistribute or
-resell the template itself, in whole or in part, as a competing template or
-source-code product.
+In short: you may use, modify and build your own end products with it, including
+commercial ones, without restriction. You may **not** redistribute or resell the
+template itself, in whole or in part, as a template, starter kit or competing
+source-code product. Bundled third-party packages (the Laravel framework and its
+dependencies) keep their own licences, typically MIT.

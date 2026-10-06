@@ -114,7 +114,7 @@ price(150000);                       // "Rp 150,000"
 price(150000);                       // "$ 150,000.00"
 ```
 
-Prices are stored as `DECIMAL(10,2)` in the database and formatted only for
+Prices are stored as `DECIMAL(12,2)` in the database and formatted only for
 display.
 
 ## Changing configuration safely

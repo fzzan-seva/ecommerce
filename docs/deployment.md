@@ -49,7 +49,7 @@ If you serve the shop from a sub-folder, set `ASSET_URL=https://example.com/shop
 
 ```bash
 php artisan migrate --force
-php artisan db:seed --class=DemoSeeder --force   # optional demo data; skip on a real store
+php artisan db:seed --force               # optional demo data; skip on a real store
 ```
 
 For the first admin account either run the demo seeder (it prints a random
